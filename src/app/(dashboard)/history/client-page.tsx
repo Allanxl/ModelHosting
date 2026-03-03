@@ -113,6 +113,20 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
         deleteItems(selectedIds);
     };
 
+    const deleteInvalid = () => {
+        const invalidIds = history.filter(item => 
+            item.status === "failed" || 
+            (item.status === "completed" && !item.resultUrl)
+        ).map(item => item.id);
+        
+        if (invalidIds.length === 0) {
+            toast.info("没有无效的视频记录");
+            return;
+        }
+        
+        deleteItems(invalidIds, `成功删除 ${invalidIds.length} 条无效记录`);
+    };
+
     const downloadSelected = async () => {
         const selectedItems = history.filter(item => selectedIds.includes(item.id) && item.status === "completed" && item.resultUrl);
         if (selectedItems.length === 0) {
@@ -138,6 +152,22 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
         toast.success(`开始下载 ${selectedItems.length} 个视频`);
     };
 
+    const groupedHistory = (() => {
+        const groups: { [key: string]: HistoryItem[] } = {};
+        history.forEach((item) => {
+            const dateKey = new Date(item.createdAt).toLocaleDateString("zh-CN", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+            if (!groups[dateKey]) {
+                groups[dateKey] = [];
+            }
+            groups[dateKey].push(item);
+        });
+        return groups;
+    })();
+
     return (
         <div className="p-8">
             <div className="mb-8">
@@ -145,6 +175,18 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
                     <h2 className="text-2xl font-bold text-gray-900">资产</h2>
                     {history.length > 0 && (
                         <div className="flex gap-2">
+                            {selectedIds.length === 0 && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={deleteInvalid}
+                                    disabled={deleting}
+                                    className="text-amber-500 border-amber-900 hover:bg-amber-900/20"
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    一键删除无效
+                                </Button>
+                            )}
                             {selectedIds.length > 0 && (
                                 <>
                                     <Button
@@ -190,72 +232,78 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="space-y-8">
                 {history.length === 0 ? (
                     <div className="col-span-full py-20 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-xl">
                         暂无生成记录
                     </div>
                 ) : (
-                    history.map((item) => (
-                        <Card
-                        key={item.id}
-                        className={`border-gray-200 bg-white overflow-hidden flex flex-col transition-all ${
-                            selectedIds.includes(item.id) ? 'ring-2 ring-violet-500' : ''
-                        }`}
-                    >
-                        <div className="flex items-center justify-between p-2 border-b border-gray-200">
-                            <Checkbox
-                                checked={selectedIds.includes(item.id)}
-                                onCheckedChange={() => toggleSelect(item.id)}
-                            />
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-gray-500 hover:text-red-400"
-                                onClick={() => deleteSingle(item.id)}
-                                disabled={deleting}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <div className="aspect-video bg-black relative flex items-center justify-center">
-                            {item.status === "completed" && item.resultUrl ? (
-                                <VideoPlayer src={item.resultUrl} />
-                            ) : item.status === "processing" ? (
-                                <div className="flex flex-col items-center gap-2 text-violet-500">
-                                    <Loader2 className="h-8 w-8 animate-spin" />
-                                    <span className="text-xs">生成中...</span>
-                                </div>
-                            ) : (
-                                <Video className="h-10 w-10 text-zinc-80" />
-                            )}
-                        </div>
-                        <CardHeader className="p-4 space-y-1">
+                    Object.entries(groupedHistory).map(([dateKey, items]) => (
+                        <div key={dateKey} className="space-y-4">
+                            <h3 className="text-sm font-semibold text-gray-600 border-b border-gray-200 pb-2">
+                                {dateKey}
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                {items.map((item) => (
+                                    <Card
+                                    key={item.id}
+                                    className={`border-gray-200 bg-white overflow-hidden flex flex-col transition-all ${
+                                        selectedIds.includes(item.id) ? 'ring-2 ring-violet-500' : ''
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between p-1.5 border-b border-gray-200">
+                                        <Checkbox
+                                            checked={selectedIds.includes(item.id)}
+                                            onCheckedChange={() => toggleSelect(item.id)}
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-gray-500 hover:text-red-400"
+                                            onClick={() => deleteSingle(item.id)}
+                                            disabled={deleting}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <div className="aspect-[4/3] max-h-40 bg-black relative flex items-center justify-center overflow-hidden group">
+                                        {item.status === "completed" && item.resultUrl ? (
+                                            <VideoPlayer src={item.resultUrl} />
+                                        ) : item.status === "processing" ? (
+                                            <div className="flex flex-col items-center gap-2 text-violet-500">
+                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                <span className="text-xs">生成中...</span>
+                                            </div>
+                                        ) : (
+                                            <Video className="h-10 w-10 text-zinc-80" />
+                                        )}
+                                    </div>
+                                    <CardHeader className="p-1.5 space-y-1">
                             <div className="flex items-center justify-between">
-                                <div className="flex flex-col gap-0.5">
-                                    <Badge variant="outline" className="text-[10px] border-gray-300 text-gray-600">
+                                <div className="flex items-center gap-1.5">
+                                    <Badge variant="outline" className="text-[8px] border-gray-300 text-gray-600">
                                         {item.apiConfig.platformName}
                                     </Badge>
-                                    <Badge variant="outline" className="text-[10px] border-gray-300 text-gray-500">
+                                    <Badge variant="outline" className="text-[8px] border-gray-300 text-gray-500">
                                         {item.modelId}
                                     </Badge>
                                 </div>
                                 {item.status === "completed" ? (
-                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                                 ) : item.status === "failed" ? (
-                                    <XCircle className="h-4 w-4 text-red-500" />
+                                    <XCircle className="h-3 w-3 text-red-500" />
                                 ) : (
-                                    <Clock className="h-4 w-4 text-amber-500" />
+                                    <Clock className="h-3 w-3 text-amber-500" />
                                 )}
                             </div>
-                            <CardTitle className="text-sm font-medium text-gray-900 line-clamp-2 min-h-[40px]">
+                            <CardTitle className="text-[11px] font-medium text-gray-900 line-clamp-2 min-h-[24px]">
                                 {item.prompt}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-4 pt-0 text-[10px] text-gray-500 mt-auto">
-                            {new Date(item.createdAt).toLocaleString("zh-CN")}
-                        </CardContent>
-                    </Card>
+                                </Card>
+                                ))}
+                            </div>
+                        </div>
                     ))
                 )}
             </div>

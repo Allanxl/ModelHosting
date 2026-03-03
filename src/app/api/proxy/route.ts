@@ -40,10 +40,12 @@ export async function POST(req: NextRequest) {
         if (activeImages.length === 0) {
             return NextResponse.json({ error: "参考图模式需要至少一张图片URL" }, { status: 400 });
         }
+        (params as any).image_urls = activeImages.slice(0, 1);
     } else if (mode === "first_last") {
         if (activeImages.length < 2) {
             return NextResponse.json({ error: "首尾帧模式需要两张图片URL（首帧和尾帧）" }, { status: 400 });
         }
+        (params as any).image_urls = activeImages.slice(0, 2);
     }
     const userId = session.user.id;
 
@@ -119,9 +121,10 @@ export async function POST(req: NextRequest) {
         let volcanoPayload: any;
 
         let baseInputContent: any[] = [];
+        const allImages = (params as any)?.image_urls || [];
         
         if (params?.mode === "first_last" && !isFast) {
-            const activeImages = (params as any)?.image_urls || [];
+            const activeImages = allImages.slice(0, 2);
             if (activeImages.length >= 2) {
                 baseInputContent = [
                     { type: "text", text: prompt },
@@ -140,16 +143,25 @@ export async function POST(req: NextRequest) {
             } else {
                 baseInputContent = [
                     { type: "text", text: prompt },
-                    ...((params as any)?.image_urls?.map((url: string) => ({
+                    ...(allImages.slice(0, 2).map((url: string) => ({
                         type: "image_url",
                         image_url: { url }
                     })) || [])
                 ];
             }
+        } else if (params?.mode === "reference") {
+            const activeImages = allImages.slice(0, 1);
+            baseInputContent = [
+                { type: "text", text: prompt },
+                ...(activeImages.map((url: string) => ({
+                    type: "image_url",
+                    image_url: { url }
+                })) || [])
+            ];
         } else {
             baseInputContent = [
                 { type: "text", text: prompt },
-                ...((params as any)?.image_urls?.map((url: string) => ({
+                ...(allImages.map((url: string) => ({
                     type: "image_url",
                     image_url: { url }
                 })) || [])

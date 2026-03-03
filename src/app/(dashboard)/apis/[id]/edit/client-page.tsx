@@ -128,7 +128,7 @@ export function EditApiClient({ config }: { config: any }) {
                                         <FormItem>
                                             <FormLabel>平台名称</FormLabel>
                                             <FormControl>
-                                                <Input {...field} className="bg-zinc-800 border-zinc-700 font-medium text-zinc-100" />
+                                                <Input {...field} className="bg-gray-100 border-gray-300 font-medium text-gray-900" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -161,7 +161,7 @@ export function EditApiClient({ config }: { config: any }) {
                                     <FormItem>
                                         <FormLabel>API Base URL</FormLabel>
                                         <FormControl>
-                                            <Input {...field} className="bg-zinc-800 border-zinc-700 font-medium text-zinc-100" />
+                                            <Input {...field} className="bg-gray-100 border-gray-300 font-medium text-gray-900" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
