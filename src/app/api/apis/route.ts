@@ -33,7 +33,8 @@ export async function GET() {
     });
 
     // Never return the encrypted key to the client
-    return NextResponse.json(configs.map(c => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return NextResponse.json(configs.map((c: any) => ({
         ...c,
         encryptedApiKey: undefined,
         apiKeyMasked: "••••••••" + c.encryptedApiKey.slice(-4),
