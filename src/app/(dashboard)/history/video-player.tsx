@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ExternalLink, Maximize2, Minimize2 } from "lucide-react";
 
 interface VideoPlayerProps {
@@ -36,11 +36,17 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
         setIsFullscreen(!!document.fullscreenElement);
     };
 
+    useEffect(() => {
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+    }, []);
+
     return (
         <div
             ref={containerRef}
             className="w-full h-full"
-            onFullscreenChange={handleFullscreenChange}
         >
             <video
                 ref={videoRef}
