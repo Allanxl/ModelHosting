@@ -62,7 +62,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const updateData: Record<string, unknown> = { ...rest };
     if (apiKey) updateData.encryptedApiKey = encryptApiKey(apiKey);
 
-    const updated = await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updated = await prisma.$transaction(async (tx: any) => {
         const c = await tx.apiConfig.update({ where: { id }, data: updateData });
         if (models) {
             await tx.apiModel.deleteMany({ where: { apiConfigId: id } });
