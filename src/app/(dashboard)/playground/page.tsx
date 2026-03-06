@@ -22,12 +22,14 @@ export default async function PlaygroundPage() {
 
     // Flatten models into a selectable list
     const availableModels = [
-        ...ownedConfigs.flatMap((c) => c.models.map((m) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...ownedConfigs.flatMap((c: any) => c.models.map((m: any) => ({
             ...m,
             platformName: c.platformName,
             isOwner: true,
         }))),
-        ...sharedPermissions.flatMap((p) => p.apiConfig.models.map((m) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...sharedPermissions.flatMap((p: any) => p.apiConfig.models.map((m: any) => ({
             ...m,
             platformName: p.apiConfig.platformName,
             isOwner: false,
