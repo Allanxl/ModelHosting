@@ -126,7 +126,7 @@ export default async function DashboardPage() {
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {history.map((item) => (
+                                {history.map((item: { id: string; prompt: string; createdAt: Date; status: string; apiConfig: { platformName: string } }) => (
                                     <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-900 truncate">{item.prompt}</p>
