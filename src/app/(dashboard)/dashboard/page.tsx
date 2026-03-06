@@ -23,7 +23,7 @@ export default async function DashboardPage() {
         }),
     ]);
 
-    const totalModels = apiConfigs.reduce((sum, c) => sum + c.models.length, 0);
+    const totalModels = apiConfigs.reduce((sum: number, c) => sum + c.models.length, 0);
     const totalGenerations = history.length;
     const recentSuccess = history.filter(h => h.status === "completed").length;
 
