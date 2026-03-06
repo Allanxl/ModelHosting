@@ -204,7 +204,7 @@ export function EditApiClient({ config }: { config: any }) {
                             </Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {fields.map((field, index) => (
+                            {fields.map((field: { id: string }, index: number) => (
                                 <div key={field.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end border-b border-gray-200 pb-4 last:border-0">
                                     <div className="md:col-span-4">
                                         <FormField
@@ -223,7 +223,7 @@ export function EditApiClient({ config }: { config: any }) {
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent className="bg-white border-gray-200 text-gray-900">
-                                                            {VOLCANO_PRESETS.map(p => (
+                                                            {VOLCANO_PRESETS.map((p: { id: string; label: string }) => (
                                                                 <SelectItem key={p.id} value={p.label}>{p.label}</SelectItem>
                                                             ))}
                                                         </SelectContent>

@@ -56,7 +56,7 @@ export function ApisClient({ initialConfigs }: { initialConfigs: ApiConfigWithMo
         try {
             const res = await fetch(`/api/apis/${id}`, { method: "DELETE" });
             if (!res.ok) throw new Error("删除失败");
-            setConfigs(configs.filter((c) => c.id !== id));
+            setConfigs(configs.filter((c: ApiConfigWithModels) => c.id !== id));
             toast.success("已成功删除 API 配置");
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : "删除失败");
@@ -120,7 +120,7 @@ export function ApisClient({ initialConfigs }: { initialConfigs: ApiConfigWithMo
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {configs.map((config) => (
+                {configs.map((config: ApiConfigWithModels) => (
                     <Card key={config.id} className="border-gray-200 bg-white group">
                         <CardHeader className="flex flex-row items-start justify-between space-y-0">
                             <div className="space-y-1">
@@ -174,7 +174,7 @@ export function ApisClient({ initialConfigs }: { initialConfigs: ApiConfigWithMo
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex flex-wrap gap-2">
-                                {config.models.map((m) => (
+                                {config.models.map((m: { id: string; label: string }) => (
                                     <Badge key={m.id} variant="secondary" className="bg-gray-100 text-gray-700 border-gray-300">
                                         {m.label}
                                     </Badge>

@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         const c = await tx.apiConfig.update({ where: { id }, data: updateData });
         if (models) {
             await tx.apiModel.deleteMany({ where: { apiConfigId: id } });
-            await tx.apiModel.createMany({ data: models.map(m => ({ ...m, apiConfigId: id })) });
+            await tx.apiModel.createMany({ data: (models as any[]).map((m: any) => ({ ...m, apiConfigId: id })) });
         }
         return c;
     });

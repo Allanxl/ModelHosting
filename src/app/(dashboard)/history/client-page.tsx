@@ -75,13 +75,13 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
         if (selectedIds.length === history.length) {
             setSelectedIds([]);
         } else {
-            setSelectedIds(history.map(item => item.id));
+            setSelectedIds(history.map((item: HistoryItem) => item.id));
         }
     };
 
     const toggleSelect = (id: string) => {
         setSelectedIds(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+            prev.includes(id) ? prev.filter((i: string) => i !== id) : [...prev, id]
         );
     };
 
@@ -95,8 +95,8 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
             });
             if (!res.ok) throw new Error("删除失败");
             const data = await res.json();
-            setHistory(prev => prev.filter(item => !ids.includes(item.id)));
-            setSelectedIds(prev => prev.filter(id => !ids.includes(id)));
+            setHistory(prev => prev.filter((item: HistoryItem) => !ids.includes(item.id)));
+            setSelectedIds(prev => prev.filter((id: string) => !ids.includes(id)));
             toast.success(message || `成功删除 ${data.count} 条记录`);
         } catch {
             toast.error("删除失败，请重试");
@@ -115,10 +115,10 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
     };
 
     const deleteInvalid = () => {
-        const invalidIds = history.filter(item =>
+        const invalidIds = history.filter((item: HistoryItem) =>
             item.status === "failed" ||
             (item.status === "completed" && !item.resultUrl)
-        ).map(item => item.id);
+        ).map((item: HistoryItem) => item.id);
 
         if (invalidIds.length === 0) {
             toast.info("没有无效的视频记录");
@@ -129,7 +129,7 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
     };
 
     const downloadSelected = async () => {
-        const selectedItems = history.filter(item => selectedIds.includes(item.id) && item.status === "completed" && item.resultUrl);
+        const selectedItems = history.filter((item: HistoryItem) => selectedIds.includes(item.id) && item.status === "completed" && item.resultUrl);
         if (selectedItems.length === 0) {
             toast.info("请先选择已完成且有视频的记录");
             return;

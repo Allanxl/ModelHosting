@@ -48,7 +48,7 @@ export function Sidebar() {
                     <h1 className="text-2xl font-bold">ModelHosting</h1>
                 </Link>
                 <div className="space-y-1">
-                    {routes.map((route) => (
+                    {routes.map((route: { href: string; color: string; icon: any; label: string }) => (
                         <Link
                             key={route.href}
                             href={route.href}

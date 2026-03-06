@@ -124,13 +124,12 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
     }, [tasks]);
 
     const getProcessingTasksCount = () => {
-        return tasks.filter(task => task.status === "processing").length;
+        return tasks.filter((task: VideoTask) => task.status === "processing").length;
     };
 
     const handleSubmit = async () => {
         if (!selectedModel || !prompt.trim()) return;
-
-        const activeImages = imageUrls.filter(url => url.trim() !== "");
+        const activeImages = imageUrls.filter((url: string) => url.trim() !== "");
 
         if (genMode === "reference") {
             if (activeImages.length === 0) {
@@ -173,7 +172,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             params: submissionParams,
         };
 
-        setTasks(prev => [...prev, newTask]);
+        setTasks((prev: VideoTask[]) => [...prev, newTask]);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: Record<string, any> = {
@@ -211,8 +210,9 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             pollResult(data.historyId, taskId);
         } catch (err: unknown) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const error = err as { code?: string; message: string; rawData?: any };
-            setTasks(prev => prev.map(task =>
+            setTasks((prev: VideoTask[]) => prev.map((task: VideoTask) =>
                 task.id === taskId
                     ? { ...task, status: "failed", errorInfo: { code: error.code, message: error.message, rawData: error.rawData } }
                     : task
@@ -230,7 +230,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             attempts++;
             if (attempts > 120) {
                 clearInterval(interval);
-                setTasks(prev => prev.map(task =>
+                setTasks((prev: VideoTask[]) => prev.map((task: VideoTask) =>
                     task.id === taskId
                         ? { ...task, status: "failed", errorInfo: { message: "生成超时，请在历史记录中查看" } }
                         : task
@@ -244,7 +244,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
 
                 if (data.status === "completed") {
                     clearInterval(interval);
-                    setTasks(prev => prev.map(task =>
+                    setTasks((prev: VideoTask[]) => prev.map((task: VideoTask) =>
                         task.id === taskId
                             ? { ...task, status: "completed", progress: 100, resultUrl: data.resultUrl }
                             : task
@@ -253,7 +253,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                 } else if (data.status === "failed") {
                     clearInterval(interval);
                     const rawResultData = data.resultData;
-                    setTasks(prev => prev.map(task =>
+                    setTasks((prev: VideoTask[]) => prev.map((task: VideoTask) =>
                         task.id === taskId
                             ? {
                                 ...task,
@@ -267,7 +267,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                             : task
                     ));
                 } else {
-                    setTasks(prev => prev.map(task =>
+                    setTasks((prev: VideoTask[]) => prev.map((task: VideoTask) =>
                         task.id === taskId
                             ? { ...task, progress: Math.min(task.progress + (task.progress < 90 ? 1 : 0.1), 98) }
                             : task
@@ -286,7 +286,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             return;
         }
 
-        const model = models.find(m => m.id === task.params.modelId);
+        const model = models.find((m: PlaygroundModel) => m.id === task.params.modelId);
         if (!model) return;
 
         const taskId = Date.now().toString();
@@ -299,9 +299,9 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             errorInfo: undefined,
         };
 
-        setTasks(prev => [...prev, newTask]);
+        setTasks((prev: VideoTask[]) => [...prev, newTask]);
 
-        const activeImages = task.params.imageUrls.filter(url => url.trim() !== "");
+        const activeImages = task.params.imageUrls.filter((url: string) => url.trim() !== "");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: Record<string, any> = {
             aspect_ratio: task.params.aspectRatio === "auto" ? "16:9" : task.params.aspectRatio,
@@ -339,7 +339,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
         } catch (err: unknown) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const error = err as { code?: string; message: string; rawData?: any };
-            setTasks(prev => prev.map(t =>
+            setTasks((prev: VideoTask[]) => prev.map((t: VideoTask) =>
                 t.id === taskId
                     ? { ...t, status: "failed", errorInfo: { code: error.code, message: error.message, rawData: error.rawData } }
                     : t
@@ -349,7 +349,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
     };
 
     const removeTaskFromStream = (taskId: string) => {
-        setTasks(prev => prev.filter(task => task.id !== taskId));
+        setTasks((prev: VideoTask[]) => prev.filter((task: VideoTask) => task.id !== taskId));
     };
 
     return (
@@ -364,7 +364,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                     </div>
                 ) : (
                     <div className="max-w-4xl mx-auto space-y-6">
-                        {tasks.map((task) => (
+                        {tasks.map((task: VideoTask) => (
                             <div key={task.id} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm relative">
                                 <Button
                                     variant="ghost"
@@ -494,7 +494,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                             <div className="p-2 md:p-3">
                                 <Select
                                     onValueChange={(val) => {
-                                        const model = models.find(m => m.id === val);
+                                        const model = models.find((m: PlaygroundModel) => m.id === val);
                                         if (model) setSelectedModel(model);
                                     }}
                                     defaultValue={selectedModel?.id}
@@ -503,7 +503,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                                         <SelectValue placeholder="选择模型" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white border-gray-200 text-gray-900">
-                                        {models.map((model) => (
+                                        {models.map((model: PlaygroundModel) => (
                                             <SelectItem key={model.id} value={model.id}>
                                                 {model.platformName} - {model.label}
                                             </SelectItem>
@@ -621,7 +621,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                                                     <div className="space-y-3">
                                                         <Label className="text-gray-600 text-[11px] font-semibold uppercase tracking-wider">视频比例</Label>
                                                         <div className="grid grid-cols-4 gap-1.5">
-                                                            {RATIOS.map((r) => (
+                                                            {RATIOS.map((r: { label: string; value: string; icon: string }) => (
                                                                 <div
                                                                     key={r.value}
                                                                     className={cn(
@@ -640,7 +640,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                                                     <div className="space-y-3">
                                                         <Label className="text-gray-600 text-[11px] font-semibold uppercase tracking-wider">分辨率</Label>
                                                         <div className="flex gap-1.5 p-0.5 bg-white rounded-lg">
-                                                            {["480p", "720p", "1080p"].map(res => (
+                                                            {["480p", "720p", "1080p"].map((res: string) => (
                                                                 <Button
                                                                     key={res}
                                                                     variant="ghost"

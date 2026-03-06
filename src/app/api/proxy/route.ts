@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (!config) return NextResponse.json({ error: "API config not found or access denied" }, { status: 403 });
 
     // Verify model is in allowed list
-    const modelAllowed = config.models.some((m) => m.modelId === modelId);
+    const modelAllowed = config.models.some((m: { modelId: string }) => m.modelId === modelId);
     if (!modelAllowed) return NextResponse.json({ error: "模型不在授权列表中" }, { status: 403 });
 
     // Daily quota check
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
 
     try {
         // Volcano Ark Transformation
-        const modelLabel = config.models.find((m) => m.modelId === modelId)?.label || "";
+        const modelLabel = config.models.find((m: { modelId: string; label: string }) => m.modelId === modelId)?.label || "";
         const isV2 = modelLabel.includes("2.0");
         const isV15 = modelLabel.includes("1.5");
         const isFast = modelLabel.includes("Fast");
@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
         }
 
         const inputContent = isV2
-            ? baseInputContent.map(item => {
+            ? baseInputContent.map((item: { role?: string }) => {
                 if (item.role === "first_frame" || item.role === "last_frame") {
                     return item;
                 }
