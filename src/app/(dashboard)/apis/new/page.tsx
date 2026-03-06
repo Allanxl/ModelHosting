@@ -6,12 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Plus, Trash2, ArrowLeft, Database, Save, Info, PlayCircle, Sparkles } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Database, Save, Info, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -82,8 +81,8 @@ export default function NewApiPage() {
             toast.success("API 配置已保存");
             router.push("/apis");
             router.refresh();
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "保存失败");
         } finally {
             setLoading(false);
         }

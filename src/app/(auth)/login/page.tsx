@@ -58,7 +58,7 @@ function LoginContent() {
                 router.push(callbackUrl);
                 router.refresh();
             }
-        } catch (error) {
+        } catch {
             toast.error("登录时发生错误");
         } finally {
             setLoading(false);

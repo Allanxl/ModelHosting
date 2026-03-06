@@ -31,21 +31,24 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
     const { apiConfigId, modelId, prompt, params } = parsed.data;
-    
+
     const mode = params?.mode || "text_only";
-    const imageUrls = (params as any)?.image_urls || [];
-    const activeImages = imageUrls.filter((url: string) => url.trim() !== "");
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imageUrls = (params as Record<string, any>)?.image_urls || [];
+    const activeImages = (imageUrls as string[]).filter((url: string) => url.trim() !== "");
+
     if (mode === "reference") {
         if (activeImages.length === 0) {
             return NextResponse.json({ error: "参考图模式需要至少一张图片URL" }, { status: 400 });
         }
-        (params as any).image_urls = activeImages.slice(0, 1);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (params as Record<string, any>).image_urls = activeImages.slice(0, 1);
     } else if (mode === "first_last") {
         if (activeImages.length < 2) {
             return NextResponse.json({ error: "首尾帧模式需要两张图片URL（首帧和尾帧）" }, { status: 400 });
         }
-        (params as any).image_urls = activeImages.slice(0, 2);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (params as Record<string, any>).image_urls = activeImages.slice(0, 2);
     }
     const userId = session.user.id;
 
@@ -68,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (!config) return NextResponse.json({ error: "API config not found or access denied" }, { status: 403 });
 
     // Verify model is in allowed list
-    const modelAllowed = config.models.some((m: any) => m.modelId === modelId);
+    const modelAllowed = config.models.some((m) => m.modelId === modelId);
     if (!modelAllowed) return NextResponse.json({ error: "模型不在授权列表中" }, { status: 403 });
 
     // Daily quota check
@@ -102,7 +105,8 @@ export async function POST(req: NextRequest) {
             apiConfigId,
             modelId,
             prompt,
-            params: (params ?? {}) as any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            params: (params ?? {}) as any, // Using any here to satisfy Prisma JsonValue
             status: "processing",
         },
     });
@@ -112,29 +116,31 @@ export async function POST(req: NextRequest) {
 
     try {
         // Volcano Ark Transformation
-        const modelLabel = config.models.find((m: any) => m.modelId === modelId)?.label || "";
+        const modelLabel = config.models.find((m) => m.modelId === modelId)?.label || "";
         const isV2 = modelLabel.includes("2.0");
         const isV15 = modelLabel.includes("1.5");
-        const isV10 = modelLabel.includes("1.0");
         const isFast = modelLabel.includes("Fast");
 
-        let volcanoPayload: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let volcanoPayload: Record<string, any>;
 
-        let baseInputContent: any[] = [];
-        const allImages = (params as any)?.image_urls || [];
-        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let baseInputContent: any[] = []; // Keeping any[] for content array as it has mixed types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const allImages = (params as Record<string, any>)?.image_urls || [];
+
         if (params?.mode === "first_last" && !isFast) {
             const activeImages = allImages.slice(0, 2);
             if (activeImages.length >= 2) {
                 baseInputContent = [
                     { type: "text", text: prompt },
-                    { 
-                        type: "image_url", 
+                    {
+                        type: "image_url",
                         image_url: { url: activeImages[0] },
                         role: "first_frame"
                     },
-                    { 
-                        type: "image_url", 
+                    {
+                        type: "image_url",
                         image_url: { url: activeImages[1] },
                         role: "last_frame"
                     }
@@ -168,19 +174,19 @@ export async function POST(req: NextRequest) {
             ];
         }
 
-        const inputContent = isV2 
+        const inputContent = isV2
             ? baseInputContent.map(item => {
                 if (item.role === "first_frame" || item.role === "last_frame") {
                     return item;
                 }
                 return { ...item, role: "user" };
-            }) 
+            })
             : baseInputContent;
 
         if (isV2) {
             let duration = Number(params?.duration) || 8;
             duration = Math.max(4, Math.min(duration, 12));
-            
+
             volcanoPayload = {
                 model: modelId,
                 input: {
@@ -201,7 +207,7 @@ export async function POST(req: NextRequest) {
             } else {
                 duration = Math.max(2, Math.min(duration, 12));
             }
-            
+
             volcanoPayload = {
                 model: modelId,
                 content: inputContent,
@@ -212,12 +218,13 @@ export async function POST(req: NextRequest) {
             };
 
             if (isV15) {
-                
+
                 volcanoPayload.generate_audio = params?.generate_audio ?? false;
             }
 
-            if (params?.mode === "first_last" && !isFast) {
-                const activeImages = (params as any)?.image_urls || [];
+            if (params?.mode === "first_last" && !modelLabel.includes("Fast")) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const activeImages = (params as Record<string, any>)?.image_urls || [];
                 console.log("First/Last mode detected, active images:", activeImages);
                 if (activeImages.length >= 2) {
                     volcanoPayload.mode = 1;
@@ -252,10 +259,11 @@ export async function POST(req: NextRequest) {
             body: JSON.stringify(volcanoPayload),
         });
 
-        let data: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: Record<string, any>;
         const responseText = await upstream.text();
         const contentType = upstream.headers.get("content-type");
-        
+
         console.log("\n========== VOLCANO API RESPONSE ==========");
         console.log(`Status: ${upstream.status}`);
         console.log(`Content-Type: ${contentType}`);
@@ -330,7 +338,8 @@ export async function GET(req: NextRequest) {
     if (entry.status === "processing" || entry.status === "pending") {
         try {
             const apiKey = decryptApiKey(entry.apiConfig.encryptedApiKey);
-            const taskId = (entry.resultData as any)?.id || (entry.resultData as any)?.task_id;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const taskId = (entry.resultData as Record<string, any>)?.id || (entry.resultData as Record<string, any>)?.task_id;
 
             if (taskId) {
                 // Poll Volcano status: GET baseurl/{taskId}
@@ -347,15 +356,16 @@ export async function GET(req: NextRequest) {
                 if (res.ok) {
                     const pollResponseText = await res.text();
                     console.log("Poll response text:", pollResponseText);
-                    
-                    let statusData: any;
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let statusData: Record<string, any>;
                     try {
                         statusData = JSON.parse(pollResponseText);
                     } catch (parseErr) {
                         console.error("Poll JSON parsing failed:", parseErr);
                         statusData = { raw_response: pollResponseText };
                     }
-                    
+
                     const volcanoStatus = statusData.status; // pending | running | succeeded | failed
                     console.log("Volcano status:", volcanoStatus);
 

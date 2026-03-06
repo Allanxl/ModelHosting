@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Settings, PlayCircle, Video, Database, Cpu, Zap, CheckCircle2 } from "lucide-react";
+import { Sparkles, Video, Database, Cpu, Zap, CheckCircle2 } from "lucide-react";
 
 export default async function DashboardPage() {
     const session = await auth();
@@ -23,9 +23,9 @@ export default async function DashboardPage() {
         }),
     ]);
 
-    const totalModels = apiConfigs.reduce((sum: number, c: any) => sum + c.models.length, 0);
+    const totalModels = apiConfigs.reduce((sum: number, c) => sum + (c as { models: unknown[] }).models.length, 0);
     const totalGenerations = history.length;
-    const recentSuccess = history.filter((h: any) => h.status === "completed").length;
+    const recentSuccess = history.filter((h) => (h as { status: string }).status === "completed").length;
 
     return (
         <div className="p-8">

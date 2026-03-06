@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, PlayCircle, Database, History, Share2, LogOut, User, BookOpen } from "lucide-react";
+import { LayoutDashboard, PlayCircle, Database, History, Share2, LogOut, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
 const routes = [

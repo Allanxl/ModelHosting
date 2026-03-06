@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,9 +15,10 @@ type HistoryItem = {
     apiConfigId: string;
     modelId: string;
     prompt: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     params?: any;
     resultUrl?: string | null;
-    resultData?: any;
+    resultData?: unknown;
     status: string;
     errorMsg?: string | null;
     createdAt: Date;
@@ -45,17 +46,17 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
 
     const loadMoreHistory = async () => {
         if (loading || !hasMore) return;
-        
+
         setLoading(true);
         try {
             const nextOffset = currentMonthOffset + 1;
             const res = await fetch(`/api/history/${nextOffset}`);
-            
+
             if (!res.ok) {
                 setHasMore(false);
                 return;
             }
-            
+
             const newHistory = await res.json();
             if (newHistory.length === 0) {
                 setHasMore(false);
@@ -63,7 +64,7 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
                 setHistory(prev => [...prev, ...newHistory]);
                 setCurrentMonthOffset(nextOffset);
             }
-        } catch (error) {
+        } catch {
             setHasMore(false);
         } finally {
             setLoading(false);
@@ -79,7 +80,7 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
     };
 
     const toggleSelect = (id: string) => {
-        setSelectedIds(prev => 
+        setSelectedIds(prev =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         );
     };
@@ -97,7 +98,7 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
             setHistory(prev => prev.filter(item => !ids.includes(item.id)));
             setSelectedIds(prev => prev.filter(id => !ids.includes(id)));
             toast.success(message || `成功删除 ${data.count} 条记录`);
-        } catch (error) {
+        } catch {
             toast.error("删除失败，请重试");
         } finally {
             setDeleting(false);
@@ -114,16 +115,16 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
     };
 
     const deleteInvalid = () => {
-        const invalidIds = history.filter(item => 
-            item.status === "failed" || 
+        const invalidIds = history.filter(item =>
+            item.status === "failed" ||
             (item.status === "completed" && !item.resultUrl)
         ).map(item => item.id);
-        
+
         if (invalidIds.length === 0) {
             toast.info("没有无效的视频记录");
             return;
         }
-        
+
         deleteItems(invalidIds, `成功删除 ${invalidIds.length} 条无效记录`);
     };
 
@@ -246,61 +247,60 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                                 {items.map((item) => (
                                     <Card
-                                    key={item.id}
-                                    className={`border-gray-200 bg-white overflow-hidden flex flex-col transition-all ${
-                                        selectedIds.includes(item.id) ? 'ring-2 ring-violet-500' : ''
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between p-1.5 border-b border-gray-200">
-                                        <Checkbox
-                                            checked={selectedIds.includes(item.id)}
-                                            onCheckedChange={() => toggleSelect(item.id)}
-                                        />
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-gray-500 hover:text-red-400"
-                                            onClick={() => deleteSingle(item.id)}
-                                            disabled={deleting}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    <div className="aspect-[4/3] max-h-40 bg-black relative flex items-center justify-center overflow-hidden group">
-                                        {item.status === "completed" && item.resultUrl ? (
-                                            <VideoPlayer src={item.resultUrl} />
-                                        ) : item.status === "processing" ? (
-                                            <div className="flex flex-col items-center gap-2 text-violet-500">
-                                                <Loader2 className="h-8 w-8 animate-spin" />
-                                                <span className="text-xs">生成中...</span>
+                                        key={item.id}
+                                        className={`border-gray-200 bg-white overflow-hidden flex flex-col transition-all ${selectedIds.includes(item.id) ? 'ring-2 ring-violet-500' : ''
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-between p-1.5 border-b border-gray-200">
+                                            <Checkbox
+                                                checked={selectedIds.includes(item.id)}
+                                                onCheckedChange={() => toggleSelect(item.id)}
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-gray-500 hover:text-red-400"
+                                                onClick={() => deleteSingle(item.id)}
+                                                disabled={deleting}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <div className="aspect-[4/3] max-h-40 bg-black relative flex items-center justify-center overflow-hidden group">
+                                            {item.status === "completed" && item.resultUrl ? (
+                                                <VideoPlayer src={item.resultUrl} />
+                                            ) : item.status === "processing" ? (
+                                                <div className="flex flex-col items-center gap-2 text-violet-500">
+                                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                                    <span className="text-xs">生成中...</span>
+                                                </div>
+                                            ) : (
+                                                <Video className="h-10 w-10 text-zinc-80" />
+                                            )}
+                                        </div>
+                                        <CardHeader className="p-1.5 space-y-1">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Badge variant="outline" className="text-[8px] border-gray-300 text-gray-600">
+                                                        {item.apiConfig.platformName}
+                                                    </Badge>
+                                                    <Badge variant="outline" className="text-[8px] border-gray-300 text-gray-500">
+                                                        {item.modelId}
+                                                    </Badge>
+                                                </div>
+                                                {item.status === "completed" ? (
+                                                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                                ) : item.status === "failed" ? (
+                                                    <XCircle className="h-3 w-3 text-red-500" />
+                                                ) : (
+                                                    <Clock className="h-3 w-3 text-amber-500" />
+                                                )}
                                             </div>
-                                        ) : (
-                                            <Video className="h-10 w-10 text-zinc-80" />
-                                        )}
-                                    </div>
-                                    <CardHeader className="p-1.5 space-y-1">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5">
-                                    <Badge variant="outline" className="text-[8px] border-gray-300 text-gray-600">
-                                        {item.apiConfig.platformName}
-                                    </Badge>
-                                    <Badge variant="outline" className="text-[8px] border-gray-300 text-gray-500">
-                                        {item.modelId}
-                                    </Badge>
-                                </div>
-                                {item.status === "completed" ? (
-                                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                                ) : item.status === "failed" ? (
-                                    <XCircle className="h-3 w-3 text-red-500" />
-                                ) : (
-                                    <Clock className="h-3 w-3 text-amber-500" />
-                                )}
-                            </div>
-                            <CardTitle className="text-[11px] font-medium text-gray-900 line-clamp-2 min-h-[24px]">
-                                {item.prompt}
-                            </CardTitle>
-                        </CardHeader>
-                                </Card>
+                                            <CardTitle className="text-[11px] font-medium text-gray-900 line-clamp-2 min-h-[24px]">
+                                                {item.prompt}
+                                            </CardTitle>
+                                        </CardHeader>
+                                    </Card>
                                 ))}
                             </div>
                         </div>

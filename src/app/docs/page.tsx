@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Share2, BookOpen, User, Key, PlayCircle, Video, Database } from "lucide-react";
+import { Share2, BookOpen, User, PlayCircle, Database } from "lucide-react";
 
 export default function DocsPage() {
     return (
@@ -38,7 +38,7 @@ export default function DocsPage() {
                             <User className="h-6 w-6 text-indigo-600" />
                             <h2 className="text-2xl font-bold">账号管理</h2>
                         </div>
-                        
+
                         <div className="space-y-6">
                             <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50">
                                 <h3 className="text-xl font-semibold mb-3">注册账号</h3>
@@ -75,7 +75,7 @@ export default function DocsPage() {
                             <Database className="h-6 w-6 text-indigo-600" />
                             <h2 className="text-2xl font-bold">模型管理</h2>
                         </div>
-                        
+
                         <div className="space-y-6">
                             <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50">
                                 <h3 className="text-xl font-semibold mb-3">绑定 API 配置</h3>
@@ -121,7 +121,7 @@ export default function DocsPage() {
                             <PlayCircle className="h-6 w-6 text-indigo-600" />
                             <h2 className="text-2xl font-bold">模型使用</h2>
                         </div>
-                        
+
                         <div className="space-y-6">
                             <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50">
                                 <h3 className="text-xl font-semibold mb-3">生成视频</h3>

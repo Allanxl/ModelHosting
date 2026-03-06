@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -47,6 +46,7 @@ const VOLCANO_PRESETS = [
     { id: "seedance-1.0-pro-fast", label: "Seedance 1.0 Pro Fast" },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function EditApiClient({ config }: { config: any }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ export function EditApiClient({ config }: { config: any }) {
             baseUrl: config.baseUrl,
             apiKey: "",
             dailyVideoLimit: config.dailyVideoLimit,
-            models: config.models.map((m: any) => ({ modelId: m.modelId, label: m.label })),
+            models: config.models.map((m: { modelId: string; label: string }) => ({ modelId: m.modelId, label: m.label })),
         },
     });
 
@@ -82,8 +82,8 @@ export function EditApiClient({ config }: { config: any }) {
             toast.success("API 配置已更新");
             router.push("/apis");
             router.refresh();
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "更新失败");
         } finally {
             setLoading(false);
         }

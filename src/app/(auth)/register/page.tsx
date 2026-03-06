@@ -64,8 +64,8 @@ export default function RegisterPage() {
 
             toast.success("注册成功！即将跳转至登录页面");
             setTimeout(() => router.push("/login"), 2000);
-        } catch (error: any) {
-            toast.error(error.message);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "发生未知错误");
         } finally {
             setLoading(false);
         }

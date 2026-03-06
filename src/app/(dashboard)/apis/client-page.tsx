@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Database, Share2, Trash2, Edit2, Link2, MoreVertical, ShieldCheck, Mail } from "lucide-react";
+import { Plus, Database, Trash2, Edit2, Link2, MoreVertical, ShieldCheck, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,8 +58,8 @@ export function ApisClient({ initialConfigs }: { initialConfigs: ApiConfigWithMo
             if (!res.ok) throw new Error("删除失败");
             setConfigs(configs.filter((c) => c.id !== id));
             toast.success("已成功删除 API 配置");
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "删除失败");
         }
     };
 
@@ -80,8 +80,8 @@ export function ApisClient({ initialConfigs }: { initialConfigs: ApiConfigWithMo
             setIsShareDialogOpen(false);
             setShareEmail("");
             // Refresh local state if needed (optional since owner stays on list)
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "授权失败");
         }
     };
 
@@ -100,8 +100,8 @@ export function ApisClient({ initialConfigs }: { initialConfigs: ApiConfigWithMo
 
             setInviteLink(data.inviteUrl);
             setIsInviteDialogOpen(true);
-        } catch (err: any) {
-            toast.error(err.message);
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "生成失败");
         }
     };
 

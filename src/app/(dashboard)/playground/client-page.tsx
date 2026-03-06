@@ -1,27 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
     Send,
-    Loader2,
     Video,
     RefreshCw,
     AlertCircle,
-    Sparkles,
-    Wand2,
-    Image as ImageIcon,
+    ImageIcon,
     Settings2,
     X,
     ChevronDown,
-    History,
     Volume2,
     Type,
     Layers,
     Clock,
-    Maximize2,
-    Share2,
     CheckCircle2,
     XCircle
 } from "lucide-react";
@@ -73,7 +66,7 @@ type VideoTask = {
     status: "processing" | "completed" | "failed";
     progress: number;
     resultUrl?: string;
-    errorInfo?: { code?: string; message: string; rawData?: any };
+    errorInfo?: { code?: string; message: string; rawData?: unknown };
     params: SubmissionParams;
 };
 
@@ -90,7 +83,6 @@ const RATIOS = [
 const MAX_CONCURRENT_TASKS = 5;
 
 export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
-    const router = useRouter();
     const [selectedModel, setSelectedModel] = useState<PlaygroundModel | null>(models[0] || null);
     const [prompt, setPrompt] = useState("");
     const [genMode, setGenMode] = useState<"text_only" | "reference" | "first_last">("text_only");
@@ -103,7 +95,6 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
     const [generateAudio, setGenerateAudio] = useState(false);
 
     const [tasks, setTasks] = useState<VideoTask[]>([]);
-    const [pollingIntervals, setPollingIntervals] = useState<{ [key: string]: NodeJS.Timeout }>({});
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -125,6 +116,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
         if (!supportsFirstLast && genMode === "first_last") {
             setGenMode("reference");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedModel]);
 
     useEffect(() => {
@@ -139,7 +131,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
         if (!selectedModel || !prompt.trim()) return;
 
         const activeImages = imageUrls.filter(url => url.trim() !== "");
-        
+
         if (genMode === "reference") {
             if (activeImages.length === 0) {
                 toast.error("参考图模式需要至少一张图片URL");
@@ -183,7 +175,8 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
 
         setTasks(prev => [...prev, newTask]);
 
-        const params: any = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const params: Record<string, any> = {
             aspect_ratio: aspectRatio === "auto" ? "16:9" : aspectRatio,
             resolution: resolution,
             duration: duration,
@@ -216,13 +209,15 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             }
 
             pollResult(data.historyId, taskId);
-        } catch (err: any) {
-            setTasks(prev => prev.map(task => 
-                task.id === taskId 
-                    ? { ...task, status: "failed", errorInfo: { code: err.code, message: err.message, rawData: err.rawData } }
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as { code?: string; message: string; rawData?: any };
+            setTasks(prev => prev.map(task =>
+                task.id === taskId
+                    ? { ...task, status: "failed", errorInfo: { code: error.code, message: error.message, rawData: error.rawData } }
                     : task
             ));
-            toast.error(err.message);
+            toast.error(error.message);
         }
 
         setPrompt("");
@@ -235,8 +230,8 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             attempts++;
             if (attempts > 120) {
                 clearInterval(interval);
-                setTasks(prev => prev.map(task => 
-                    task.id === taskId 
+                setTasks(prev => prev.map(task =>
+                    task.id === taskId
                         ? { ...task, status: "failed", errorInfo: { message: "生成超时，请在历史记录中查看" } }
                         : task
                 ));
@@ -249,8 +244,8 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
 
                 if (data.status === "completed") {
                     clearInterval(interval);
-                    setTasks(prev => prev.map(task => 
-                        task.id === taskId 
+                    setTasks(prev => prev.map(task =>
+                        task.id === taskId
                             ? { ...task, status: "completed", progress: 100, resultUrl: data.resultUrl }
                             : task
                     ));
@@ -258,11 +253,11 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                 } else if (data.status === "failed") {
                     clearInterval(interval);
                     const rawResultData = data.resultData;
-                    setTasks(prev => prev.map(task => 
-                        task.id === taskId 
-                            ? { 
-                                ...task, 
-                                status: "failed", 
+                    setTasks(prev => prev.map(task =>
+                        task.id === taskId
+                            ? {
+                                ...task,
+                                status: "failed",
                                 errorInfo: {
                                     code: rawResultData?.error?.code || rawResultData?.error_code || rawResultData?.code || "GEN_ERROR",
                                     message: rawResultData?.error?.message || data.errorMsg || "生成失败",
@@ -272,8 +267,8 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                             : task
                     ));
                 } else {
-                    setTasks(prev => prev.map(task => 
-                        task.id === taskId 
+                    setTasks(prev => prev.map(task =>
+                        task.id === taskId
                             ? { ...task, progress: Math.min(task.progress + (task.progress < 90 ? 1 : 0.1), 98) }
                             : task
                     ));
@@ -282,8 +277,6 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                 console.error("Polling error:", e);
             }
         }, 10000);
-
-        setPollingIntervals(prev => ({ ...prev, [taskId]: interval }));
     };
 
     const retryTask = async (task: VideoTask) => {
@@ -309,7 +302,8 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
         setTasks(prev => [...prev, newTask]);
 
         const activeImages = task.params.imageUrls.filter(url => url.trim() !== "");
-        const params: any = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const params: Record<string, any> = {
             aspect_ratio: task.params.aspectRatio === "auto" ? "16:9" : task.params.aspectRatio,
             resolution: task.params.resolution,
             duration: task.params.duration,
@@ -342,13 +336,15 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
             }
 
             pollResult(data.historyId, taskId);
-        } catch (err: any) {
-            setTasks(prev => prev.map(t => 
-                t.id === taskId 
-                    ? { ...t, status: "failed", errorInfo: { code: err.code, message: err.message, rawData: err.rawData } }
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as { code?: string; message: string; rawData?: any };
+            setTasks(prev => prev.map(t =>
+                t.id === taskId
+                    ? { ...t, status: "failed", errorInfo: { code: error.code, message: error.message, rawData: error.rawData } }
                     : t
             ));
-            toast.error(err.message);
+            toast.error(error.message);
         }
     };
 
@@ -455,7 +451,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                                                 </div>
                                                 <p className="text-sm text-gray-700 text-center">{task.errorInfo?.message || "生成失败"}</p>
                                             </div>
-                                            {task.errorInfo?.rawData && (
+                                            {!!task.errorInfo?.rawData && (
                                                 <details className="group">
                                                     <summary className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
                                                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2">
@@ -698,7 +694,7 @@ export function PlaygroundClient({ models }: { models: PlaygroundModel[] }) {
                                                                 <Checkbox
                                                                     id="pop-audio-playground"
                                                                     checked={generateAudio}
-                                                                    onCheckedChange={(v: any) => setGenerateAudio(v)}
+                                                                    onCheckedChange={(v: boolean | "indeterminate") => setGenerateAudio(v === true)}
                                                                 />
                                                             </div>
                                                         </div>
