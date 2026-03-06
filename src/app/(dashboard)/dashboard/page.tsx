@@ -23,9 +23,9 @@ export default async function DashboardPage() {
         }),
     ]);
 
-    const totalModels = apiConfigs.reduce((sum: number, c) => sum + (c as { models: unknown[] }).models.length, 0);
+    const totalModels = apiConfigs.reduce((sum: number, c: { models: unknown[] }) => sum + c.models.length, 0);
     const totalGenerations = history.length;
-    const recentSuccess = history.filter((h) => (h as { status: string }).status === "completed").length;
+    const recentSuccess = history.filter((h: { status: string }) => h.status === "completed").length;
 
     return (
         <div className="p-8">
