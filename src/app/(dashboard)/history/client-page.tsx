@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Video, Clock, CheckCircle2, XCircle, Loader2, Trash2, Download, SelectAll, RefreshCw } from "lucide-react";
+import { Video, Clock, CheckCircle2, XCircle, Loader2, Trash2, Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { VideoPlayer } from "./video-player";
 
