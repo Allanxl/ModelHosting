@@ -155,7 +155,7 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
 
     const groupedHistory = (() => {
         const groups: { [key: string]: HistoryItem[] } = {};
-        history.forEach((item) => {
+        history.forEach((item: HistoryItem) => {
             const dateKey = new Date(item.createdAt).toLocaleDateString("zh-CN", {
                 year: "numeric",
                 month: "long",
@@ -245,7 +245,7 @@ export function HistoryClient({ initialHistory }: HistoryClientProps) {
                                 {dateKey}
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                                {items.map((item) => (
+                                {items.map((item: HistoryItem) => (
                                     <Card
                                         key={item.id}
                                         className={`border-gray-200 bg-white overflow-hidden flex flex-col transition-all ${selectedIds.includes(item.id) ? 'ring-2 ring-violet-500' : ''
