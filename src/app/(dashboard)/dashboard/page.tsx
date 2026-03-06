@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
     const totalModels = apiConfigs.reduce((sum: number, c: any) => sum + c.models.length, 0);
     const totalGenerations = history.length;
-    const recentSuccess = history.filter(h => h.status === "completed").length;
+    const recentSuccess = history.filter((h: any) => h.status === "completed").length;
 
     return (
         <div className="p-8">
